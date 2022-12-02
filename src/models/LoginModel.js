@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
-const validator = require('validator')
+const validator = require('validator');
+const bcryptjs = require('bcryptjs');
 
 const LoginSchema = new mongoose.Schema({
   email: { type: String, required: true },
@@ -18,6 +19,16 @@ class Login {
   async register(){
     this.valida();
     if(this.errors.length > 0) return;
+
+    //Impedindo de cadastrar mais de um usuario
+    await this.userExists();
+
+    if(this.errors.length > 0) return;
+
+    //Encriptando a senha do usuario
+    const salt = bcryptjs.genSaltSync();
+    this.body.password = bcryptjs.hashSync(this.body.password, salt);
+
     try{
       this.user = await LoginModel.create(this.body);
     }
@@ -25,7 +36,11 @@ class Login {
       console.log(e)
     }
   }
+  async userExists(){
+    const user = await LoginModel.findOne({email: this.body.email});
 
+    if(user) this.errors.push('Usuário já existe.');
+  }
   valida(){
     //Primeiro chamamos a função cleanUp() para limpar o campo 
     //e termos certeza que os dados recebidos são strings

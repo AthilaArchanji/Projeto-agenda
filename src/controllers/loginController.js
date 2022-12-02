@@ -16,7 +16,7 @@ exports.register = async (req, res) => {
       });
       return;
     }
-    req.flash('success', 'Você entrou no sistema.');
+    req.flash('success', 'Seu usuário foi criado com sucesso.');
     req.session.user = login.user;
     req.session.save(function() {
       return res.redirect('back');
